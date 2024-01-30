@@ -1,0 +1,36 @@
+movieDB:
+  name: movie-db
+  replicas: 1
+  label: movie-db
+  containerName: movie-db
+  image: postgres:12.1-alpine
+  env:
+    POSTGRES_DB: movie_db_dev
+    POSTGRES_PASSWORD: movie_db_password
+    POSTGRES_USER: movie_db_username
+  pvc: 
+    name: postgres-data-movie
+    accessMode: ReadWriteOnce
+    storage: 100Mi
+
+movieService:
+  name: movie-service
+  replicas: 1
+  label: movie-service
+  containerName: movie-service
+  image: soymhnz/jenkins_devops_exams-movie_service
+  tag: ""
+  port: 8000
+  env:
+    CAST_SERVICE_HOST_URL: "http://cast_service:8000/api/v1/casts/"
+    DATABASE_URI: "postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev"
+  pvc:
+    name: movie-service-claim0
+    accessMode: ReadWriteOnce
+    storage: 100Mi
+  volumeName: movie-service-claim0
+  service:
+    name: movie-service
+    type: ClusterIP
+    portName: "8001"
+    port: 8001

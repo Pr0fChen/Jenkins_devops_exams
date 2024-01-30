@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.movieService.name }}
+spec:
+  replicas: {{ .Values.movieService.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.movieService.label }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.movieService.label }}
+    spec:
+      containers:
+      - name: {{ .Values.movieService.containerName }}
+        image: "{{ .Values.movieService.image }}"
+        args: ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+        env:
+        - name: CAST_SERVICE_HOST_URL
+          value: {{ .Values.movieService.env.CAST_SERVICE_HOST_URL }}
+        - name: DATABASE_URI
+          value: {{ .Values.movieService.env.DATABASE_URI }}
+        ports:
+        - containerPort: {{ .Values.movieService.port }}
+        volumeMounts:
+        - mountPath: /app/
+          name: {{ .Values.movieService.volumeName }}
+      volumes:
+      - name: {{ .Values.movieService.volumeName }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.movieService.pvc.name }}

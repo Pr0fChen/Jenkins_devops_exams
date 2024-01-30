@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.castService.name }}
+spec:
+  replicas: {{ .Values.castService.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.castService.label }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.castService.label }}
+    spec:
+      containers:
+      - name: {{ .Values.castService.containerName }}
+        image: "{{ .Values.castService.image }}"
+        args: ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+        env:
+        - name: DATABASE_URI
+          value: {{ .Values.castService.env.DATABASE_URI }}
+        ports:
+        - containerPort: {{ .Values.castService.port }}
+        volumeMounts:
+        - mountPath: /app/
+          name: {{ .Values.castService.volumeName }}
+      volumes:
+      - name: {{ .Values.castService.volumeName }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.castService.pvc.name }}
