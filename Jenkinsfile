@@ -45,34 +45,52 @@ pipeline {
                     sleep 10
                     sh'''
                     docker rm -f movie-service-container || true
-                    docker rm -f movie-db-container || true
+                    docker rm -f movie-db || true
                     docker network rm movie-network || true
                     '''
                 }
             }
         }
 
-        stage('Docker Push - movie-service') {
+        stage('Tests - cast-service') {
             steps {
                 script {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
+                    sh'''
+                    docker network create cast-network
+                    docker run -d -t --name cast-db -v postgres_data_cast:/var/lib/postgresql/data/ -e POSTGRES_USER=cast_db_username -e POSTGRES_PASSWORD=cast_db_password -e POSTGRES_DB=cast_db_dev --network cast-network postgres:12.1-alpine
+                    docker run -d -t --name cast-service-container -p 8002:8000 -v cast-service:/app/ -e DATABASE_URI=postgresql://cast_db_username:cast_db_password@cast_db/cast_db_dev --network cast-network $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
+                    '''
+                    sleep 10
+                    sh'''
+                    docker rm -f cast-service-container || true
+                    docker rm -f casr-db || true
+                    docker network rm cast-network || true
                     '''
                 }
             }
         }
+
+        // stage('Docker Push - movie-service') {
+        //     steps {
+        //         script {
+        //             sh '''
+        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
+        //             docker push $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
+        //             '''
+        //         }
+        //     }
+        // }
         
-        stage('Docker Push - cast-service') {
-            steps {
-                script {
-                    sh '''
-                    docker login -u $DOCKER_ID -p $DOCKER_PASS
-                    docker push $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
-                    '''
-                }
-            }
-        }
+        // stage('Docker Push - cast-service') {
+        //     steps {
+        //         script {
+        //             sh '''
+        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
+        //             docker push $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Deploy movie-service to Kubernetes - Dev/Staging') {
             steps {
