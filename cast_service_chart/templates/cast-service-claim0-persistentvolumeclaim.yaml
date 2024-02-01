@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.castService.pvc.name }}
+spec:
+  accessModes:
+    - {{ .Values.castService.pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.castService.pvc.storage }}

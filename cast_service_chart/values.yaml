@@ -1,0 +1,35 @@
+castService:
+  name: cast-service
+  replicas: 1
+  label: cast-service
+  containerName: cast-service
+  image: soymhnz/jenkins_devops_exams-cast_service
+  tag: ""
+  port: 8000
+  env:
+    DATABASE_URI: "postgresql://cast_db_username:cast_db_password@cast_db/cast_db_dev"
+  pvc:
+    name: cast-service-claim0
+    accessMode: ReadWriteOnce
+    storage: 100Mi
+  volumeName: cast-service-claim0
+  service:
+    name: cast-service
+    type: ClusterIP
+    portName: "8002"
+    port: 8002
+
+castDB:
+  name: cast-db
+  replicas: 1
+  label: cast-db
+  containerName: cast-db
+  image: postgres:12.1-alpine
+  env:
+    POSTGRES_DB: cast_db_dev
+    POSTGRES_PASSWORD: cast_db_password
+    POSTGRES_USER: cast_db_username
+  pvc: 
+    name: postgres-data-cast
+    accessMode: ReadWriteOnce
+    storage: 100Mi

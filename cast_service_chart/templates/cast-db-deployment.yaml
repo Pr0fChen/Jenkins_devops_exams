@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.castDB.name }}
+spec:
+  replicas: {{ .Values.castDB.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.castDB.label }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.castDB.label }}
+    spec:
+      containers:
+      - name: {{ .Values.castDB.containerName }}
+        image: "{{ .Values.castDB.image }}"
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.castDB.env.POSTGRES_DB }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.castDB.env.POSTGRES_PASSWORD }}
+        - name: POSTGRES_USER
+          value: {{ .Values.castDB.env.POSTGRES_USER }}
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data/
+          name: postgres-data
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.castDB.pvc.name }}

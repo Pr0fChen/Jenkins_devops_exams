@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.movieService.service.name }}
+spec:
+  type: {{ .Values.movieService.service.type }}
+  ports:
+  - name: "{{ .Values.movieService.service.portName }}"
+    port: {{ .Values.movieService.service.port }}
+    targetPort: {{ .Values.movieService.port }}
+  selector:
+    app: {{ .Values.movieService.label }}
