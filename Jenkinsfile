@@ -158,11 +158,7 @@ pipeline {
         }
 
         stage('Deploiement en prod'){
-        environment
-        {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-        }
-            steps {
+        steps {
             // Create an Approval Button with a timeout of 15minutes.
             // this require a manuel validation in order to deploy on production environment
                     timeout(time: 15, unit: "MINUTES") {
