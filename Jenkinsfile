@@ -2,20 +2,13 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        KUBE_CONFIG = credentials('kube-config')
+        KUBECONFIG = credentials('kube-config')
         DOCKER_ID = "soymhnz"
         DOCKER_TAG = "v.${BUILD_ID}.0"
         DOCKER_PASS = credentials("DOCKER_HUB_PASS")
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/Pr0fChen/Jenkins_devops_exams.git', branch: 'ma-branche'
-            }
-        }
-
         stage('Docker Build - movie-service') {
             steps {
                 script {
@@ -63,36 +56,53 @@ pipeline {
                     sleep 10
                     sh'''
                     docker rm -f cast-service-container || true
-                    docker rm -f casr-db || true
+                    docker rm -f cast-db || true
                     docker network rm cast-network || true
                     '''
                 }
             }
         }
 
-        // stage('Docker Push - movie-service') {
+        stage('Docker Push - movie-service') {
+            steps {
+                script {
+                    sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
+                    docker push $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
+                    '''
+                }
+            }
+        }
+        
+        stage('Docker Push - cast-service') {
+            steps {
+                script {
+                    sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
+                    docker push $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
+                    '''
+                }
+            }
+        }
+
+        // stage('Deploy movie-service to Kubernetes - Dev') {
         //     steps {
         //         script {
-        //             sh '''
-        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
-        //             docker push $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
-        //             '''
+        //         sh '''
+        //         rm -Rf .kube
+        //         mkdir .kube
+        //         ls
+        //         cat $KUBECONFIG > .kube/config
+        //         cp movie_service_chart/values.yaml values.yml
+        //         cat values.yml
+        //         sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+        //         helm upgrade --install movie-service movie_service_chart --namespace dev -f movie_service_chart/values.yaml
+        //         '''
         //         }
         //     }
         // }
         
-        // stage('Docker Push - cast-service') {
-        //     steps {
-        //         script {
-        //             sh '''
-        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
-        //             docker push $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
-        //             '''
-        //         }
-        //     }
-        // }
-
-        stage('Deploy movie-service to Kubernetes - Dev/Staging') {
+        stage('Deploy cast-service to Kubernetes - Dev') {
             steps {
                 script {
                 sh '''
@@ -103,7 +113,14 @@ pipeline {
                 cp movie_service_chart/values.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install movie-service-dev movie_service_chart/ --namespace dev -f movie_service_chart/values.yaml
+                helm upgrade --install cast-service cast_service_chart --namespace dev -f cast_service_chart/values.yaml
+                '''
+                sleep 5
+                sh '''
+                cp cast_service_chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast_service_chart --namespace dev -f cast_service_chart/values.yaml
                 '''
                 }
             }
