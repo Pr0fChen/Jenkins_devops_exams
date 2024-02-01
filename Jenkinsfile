@@ -167,11 +167,7 @@ pipeline {
 
                     script {
                     sh '''
-                    rm -Rf .kube
-                    mkdir .kube
-                    ls
-                    cat $KUBECONFIG > .kube/config
-                    cp fastapi/values.yaml values.yml
+                    cp cast_service_chart/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
