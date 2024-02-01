@@ -158,30 +158,30 @@ pipeline {
         }
 
         stage('Deploiement en prod'){
-        steps {
-            // Create an Approval Button with a timeout of 15minutes.
-            // this require a manuel validation in order to deploy on production environment
-                    timeout(time: 15, unit: "MINUTES") {
-                        input message: 'Do you want to deploy in production ?', ok: 'Yes'
-                    }
+            steps {
+                // Create an Approval Button with a timeout of 15minutes.
+                // this require a manuel validation in order to deploy on production environment
+                        timeout(time: 15, unit: "MINUTES") {
+                            input message: 'Do you want to deploy in production ?', ok: 'Yes'
+                        }
 
-                script {
-                sh '''
-                rm -Rf .kube
-                mkdir .kube
-                ls
-                cat $KUBECONFIG > .kube/config
-                cp fastapi/values.yaml values.yml
-                cat values.yml
-                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
-                '''
+                    script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    ls
+                    cat $KUBECONFIG > .kube/config
+                    cp fastapi/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
+                    '''
+                    }
                 }
+
             }
 
         }
-
-    }
 
     post {
         always {
