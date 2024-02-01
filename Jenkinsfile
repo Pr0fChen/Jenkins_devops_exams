@@ -36,7 +36,7 @@ pipeline {
                     docker run -d -t --name movie-service-container -p 8001:8000 -v movie-service:/app/ -e DATABASE_URI=postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev -e CAST_SERVICE_HOST_URL=http://cast_service:8000/api/v1/casts/ --network movie-network $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
                     '''
                     sleep 10
-                    sh'''
+                    sh '''
                     docker rm -f movie-service-container || true
                     docker rm -f movie-db || true
                     docker network rm movie-network || true
@@ -54,7 +54,7 @@ pipeline {
                     docker run -d -t --name cast-service-container -p 8002:8000 -v cast-service:/app/ -e DATABASE_URI=postgresql://cast_db_username:cast_db_password@cast_db/cast_db_dev --network cast-network $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
                     '''
                     sleep 10
-                    sh'''
+                    sh '''
                     docker rm -f cast-service-container || true
                     docker rm -f cast-db || true
                     docker network rm cast-network || true
@@ -63,69 +63,28 @@ pipeline {
             }
         }
 
-        // stage('Docker Push - movie-service') {
-        //     steps {
-        //         script {
-        //             sh '''
-        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
-        //             docker push $DOCKER_ID/jenkins_devops_exams-movie_service:$DOCKER_TAG
-        //             '''
-        //         }
-        //     }
-        // }
-        
-        // stage('Docker Push - cast-service') {
-        //     steps {
-        //         script {
-        //             sh '''
-        //             docker login -u $DOCKER_ID -p $DOCKER_PASS
-        //             docker push $DOCKER_ID/jenkins_devops_exams-cast_service:$DOCKER_TAG
-        //             '''
-        //         }
-        //     }
-        // }
-
         stage('Deploy to Kubernetes - Dev') {
             steps {
                 script {
-                sh '''
-                rm -Rf .kube
-                mkdir .kube
-                ls
-                cat $KUBECONFIG > .kube/config
-                cp movie_service_chart/values.yaml values.yml
-                cat values.yml
-                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install movie-service movie_service_chart --namespace dev -f movie_service_chart/values.yaml
-                '''
-                sleep 5
-                sh '''
-                cp cast_service_chart/values.yaml values.yml
-                cat values.yml
-                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install cast-service movie_service_chart --namespace dev -f cast_service_chart/values.yaml
-                '''
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    ls
+                    cat $KUBECONFIG > .kube/config
+                    cp movie_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie_service_chart --namespace dev -f values.yml
+                    '''
+                    sleep 5
+                    sh '''
+                    cp cast_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast_service_chart --namespace dev -f values.yml
+                    '''
                 }
             }
-        }
-
-        // stage('Deploy to Production') {
-        //     when {
-        //         branch 'master'
-        //     }
-        //     steps {
-        //         script {
-        //             def userInput = input(id: 'confirm', message: 'Deploy to Production?', parameters: [[$class: 'BooleanParameterDefinition', defaultValue: false, description: '', name: 'Confirm']])
-        //             if (userInput) {
-        //                 echo 'Deploying to Production...'
-        //                 withKubeConfig([credentialsId: KUBE_CONFIG]) {
-        //                     sh 'helm upgrade --install movie-service-release movie_service_chart/ --namespace prod -f movie_service_chart/values.yaml'
-        //                     sh 'helm upgrade --install cast-service-release cast_service_chart/ --namespace prod -f cast_service_chart/values.yaml'
-        //                     sh 'helm upgrade --install nginx-release nginx_chart/ --namespace prod -f nginx_chart/values.yaml'
-        //                 }
-        //             }
-        //         }
-        //     }
         }
     }
 
