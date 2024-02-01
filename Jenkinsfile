@@ -86,6 +86,54 @@ pipeline {
                 }
             }
         }
+    
+        stage('Deploy to Kubernetes - QA') {
+            steps {
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    ls
+                    cat $KUBECONFIG > .kube/config
+                    cp movie_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie_service_chart --namespace qa -f values.yml
+                    '''
+                    sleep 5
+                    sh '''
+                    cp cast_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast_service_chart --namespace qa -f values.yml
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes - Stagging') {
+            steps {
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    ls
+                    cat $KUBECONFIG > .kube/config
+                    cp movie_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie_service_chart --namespace stagging -f values.yml
+                    '''
+                    sleep 5
+                    sh '''
+                    cp cast_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast_service_chart --namespace stagging -f values.yml
+                    '''
+                }
+            }
+        }
     }
 
     post {
