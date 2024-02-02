@@ -11,6 +11,7 @@ nginx:
     name: nginx-service
     type: NodePort
     port: 8080
+    targetPort: 8080
 
 volume:
   name: storage
