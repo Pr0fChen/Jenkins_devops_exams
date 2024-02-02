@@ -192,10 +192,10 @@ pipeline {
                     '''
                     sleep 5
                     sh '''
-                    cp cast_service_chart/values.yaml values.yml
+                    cp movie_service_chart/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
+                    helm upgrade --install movie-service movie_service_chart --namespace prod -f values.yml
                     '''
                     sleep 5
                     sh '''
