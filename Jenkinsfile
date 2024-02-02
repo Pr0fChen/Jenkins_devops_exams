@@ -212,7 +212,7 @@ pipeline {
     post {
         always {
             mail to: 'maelig.hernandez95@gmail.com',
-                subject: "Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "${currentBuild.currentResult} Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: "Le pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} est terminé. Statut : ${currentBuild.currentResult}. Consultez les détails ici : ${env.BUILD_URL}"
         }
     }
