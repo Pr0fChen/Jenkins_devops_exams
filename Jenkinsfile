@@ -177,8 +177,7 @@ pipeline {
 
         stage('Deploiement en prod'){
             steps {
-                // Create an Approval Button with a timeout of 15minutes.
-                // this require a manuel validation in order to deploy on production environment
+
                         timeout(time: 15, unit: "MINUTES") {
                             input message: 'Do you want to deploy in production ?', ok: 'Yes'
                         }
@@ -212,7 +211,9 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution complete.'
+            mail to: 'maelig.hernandez95@gmail.com',
+                subject: "Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Le pipeline ${env.JOB_NAME} #${env.BUILD_NUMBER} est terminé. Statut : ${currentBuild.currentResult}. Consultez les détails ici : ${env.BUILD_URL}"
         }
     }
 }
