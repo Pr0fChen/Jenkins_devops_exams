@@ -135,6 +135,12 @@ pipeline {
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast_service_chart --namespace qa -f values.yml
                     '''
+                    sleep 5
+                    sh '''
+                    cp nginx-chart/values.yaml values.yml
+                    cat values.yml
+                    helm upgrade --install nginx nginx-chart --namespace qa -f values.yml
+                    '''
                 }
             }
         }
@@ -159,6 +165,12 @@ pipeline {
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast_service_chart --namespace stagging -f values.yml
                     '''
+                    sleep 5
+                    sh '''
+                    cp nginx-chart/values.yaml values.yml
+                    cat values.yml
+                    helm upgrade --install nginx nginx-chart --namespace stagging -f values.yml
+                    '''
                 }
             }
         }
@@ -177,6 +189,19 @@ pipeline {
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
+                    '''
+                    sleep 5
+                    sh '''
+                    cp cast_service_chart/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast_service_chart --namespace prod -f values.yml
+                    '''
+                    sleep 5
+                    sh '''
+                    cp nginx-chart/values.yaml values.yml
+                    cat values.yml
+                    helm upgrade --install nginx nginx-chart --namespace prod -f values.yml
                     '''
                     }
                 }
