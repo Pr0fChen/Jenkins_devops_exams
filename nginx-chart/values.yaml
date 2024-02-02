@@ -1,0 +1,19 @@
+replicaCount: 1
+
+nginx:
+  name: nginx-deployment
+  label: nginx-app
+  image:
+    repository: nginx
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    name: nginx-service
+    type: NodePort
+    port: 8080
+
+volume:
+  name: storage
+  accessMode: ReadWriteOnce
+  storage: 5Gi
+  storageClassName: local-path

@@ -105,6 +105,12 @@ pipeline {
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast_service_chart --namespace dev -f values.yml
                     '''
+                    sleep 5
+                    sh '''
+                    cp nginx-chart/values.yaml values.yml
+                    cat values.yml
+                    helm upgrade --install nginx nginx-chart --namespace dev -f values.yml
+                    '''
                 }
             }
         }
